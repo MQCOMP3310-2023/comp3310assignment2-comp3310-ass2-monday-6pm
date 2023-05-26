@@ -42,6 +42,11 @@
 					<span class="glyphicon glyphicon-glass" aria-hidden="true"></span>Add Menu Item
 				</button>
 			</a>
+			<a href="{{url_for('main.print_pdf', restaurant_id=restaurant.id )}}">
+				<button class="btn btn-default" id="pdf">
+					<span class="glyphicon glyphicon-glass" aria-hidden="true"></span>Save As PDF
+				</button>
+			</a>
 						<a href="{{url_for('main.deleteRestaurant', restaurant_id = restaurant.id )}}">
 				<button class="btn btn-default delete" id="delete-restaurant">
 					<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>Delete Restaurant
