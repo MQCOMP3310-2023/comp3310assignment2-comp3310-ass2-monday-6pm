@@ -1,4 +1,3 @@
-from io import BytesIO
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from .models import Restaurant, MenuItem
 from sqlalchemy import asc
@@ -79,7 +78,6 @@ def showMenu(restaurant_id):
     restaurant = db.session.query(Restaurant).filter_by(id=restaurant_id).one()
     items = db.session.query(MenuItem).filter_by(
         restaurant_id=restaurant_id).all()
-    print(items)
     return render_template('menu.html', items=items, restaurant=restaurant)
 
 
@@ -91,7 +89,6 @@ def print_pdf(restaurant_id):
     restaurant = db.session.query(
         Restaurant).filter_by(id=restaurant_id).one()
     generate_pdf(restaurant.name, menu_data)
-    print(menu_data)
     return redirect(url_for('main.showMenu', restaurant_id=restaurant_id))
 
 
@@ -182,7 +179,6 @@ def generate_pdf(restaurant_name, menu_items):
             pdf.setFillColorRGB(0.97, 0.84, 0.56)
             pdf.drawString(280, y, f"{item.price}")
             y -= 20
-            print(item.price, item.name)
     y = 600
     pdf.setFillColorRGB(255, 255, 255)
     pdf.setFont("Helvetica-Bold", 20)
@@ -195,7 +191,6 @@ def generate_pdf(restaurant_name, menu_items):
             pdf.setFillColorRGB(0.97, 0.84, 0.56)
             pdf.drawString(580, y, f"{item.price}")
             y -= 20
-            print(item.price, item.name)
     y = 600
     pdf.setFont("Helvetica-Bold", 20)
     pdf.setFillColorRGB(255, 255, 255)
@@ -204,11 +199,18 @@ def generate_pdf(restaurant_name, menu_items):
     for item in menu_items:
         if item.course == "Dessert":
             pdf.setFillColorRGB(255, 255, 255)
-            pdf.drawString(650, y, f"• {item.name}")
+            print(len(item.name))
+            if len({item.name}) > 25:
+                index = item.name[:25].rindex(' ')
+                pdf.drawString(650, y, f"• {item.name[:index].strip()}")
+                item.name = item.name[index:]
+                y -= 20
+                pdf.drawString(650, y, f"• {item.name}")
+            else:
+                pdf.drawString(650, y, f"• {item.name}")
             pdf.setFillColorRGB(0.97, 0.84, 0.56)
             pdf.drawString(880, y, f"{item.price}")
             y -= 20
-            print(item.price, item.name)
     y = 600
     pdf.setFont("Helvetica-Bold", 20)
     pdf.setFillColorRGB(255, 255, 255)
@@ -221,7 +223,6 @@ def generate_pdf(restaurant_name, menu_items):
             pdf.setFillColorRGB(0.97, 0.84, 0.56)
             pdf.drawString(1180, y, f"{item.price}")
             y -= 20
-            print(item.price, item.name)
 
     pdf.save()
-    print("generated pdf")
+    print("PDF Generated")
