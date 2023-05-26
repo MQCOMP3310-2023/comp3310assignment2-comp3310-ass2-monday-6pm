@@ -174,10 +174,17 @@ def generate_pdf(restaurant_name, menu_items):
     pdf.setFont("Helvetica-Bold", 14)
     for item in menu_items:
         if item.course == "Appetizer":
-            pdf.setFillColorRGB(255, 255, 255)
-            pdf.drawString(50, y, f"• {item.name}")
             pdf.setFillColorRGB(0.97, 0.84, 0.56)
             pdf.drawString(280, y, f"{item.price}")
+            pdf.setFillColorRGB(255, 255, 255)
+            if len(item.name) > 25:
+                index = item.name[:25].rindex(' ')
+                pdf.drawString(50, y, f"• {item.name[:index].strip()}")
+                item.name = item.name[index:]
+                y -= 20
+                pdf.drawString(350, y, f"{item.name}")
+            else:
+                pdf.drawString(50, y, f"• {item.name}")
             y -= 20
     y = 600
     pdf.setFillColorRGB(255, 255, 255)
@@ -186,10 +193,17 @@ def generate_pdf(restaurant_name, menu_items):
     pdf.setFont("Helvetica-Bold", 14)
     for item in menu_items:
         if item.course == "Entree":
-            pdf.setFillColorRGB(255, 255, 255)
-            pdf.drawString(350, y, f"• {item.name}")
             pdf.setFillColorRGB(0.97, 0.84, 0.56)
             pdf.drawString(580, y, f"{item.price}")
+            pdf.setFillColorRGB(255, 255, 255)
+            if len(item.name) > 25:
+                index = item.name[:25].rindex(' ')
+                pdf.drawString(350, y, f"• {item.name[:index].strip()}")
+                item.name = item.name[index:]
+                y -= 20
+                pdf.drawString(350, y, f"{item.name}")
+            else:
+                pdf.drawString(350, y, f"• {item.name}")
             y -= 20
     y = 600
     pdf.setFont("Helvetica-Bold", 20)
@@ -198,18 +212,18 @@ def generate_pdf(restaurant_name, menu_items):
     pdf.setFont("Helvetica-Bold", 14)
     for item in menu_items:
         if item.course == "Dessert":
+            pdf.setFillColorRGB(0.97, 0.84, 0.56)
+            pdf.drawString(880, y, f"{item.price}")
             pdf.setFillColorRGB(255, 255, 255)
-            print(len(item.name))
-            if len({item.name}) > 25:
+            if len(item.name) > 25:
+                # Creates new line if over 25 characters long
                 index = item.name[:25].rindex(' ')
                 pdf.drawString(650, y, f"• {item.name[:index].strip()}")
                 item.name = item.name[index:]
                 y -= 20
-                pdf.drawString(650, y, f"• {item.name}")
+                pdf.drawString(650, y, f"{item.name}")
             else:
                 pdf.drawString(650, y, f"• {item.name}")
-            pdf.setFillColorRGB(0.97, 0.84, 0.56)
-            pdf.drawString(880, y, f"{item.price}")
             y -= 20
     y = 600
     pdf.setFont("Helvetica-Bold", 20)
@@ -218,11 +232,17 @@ def generate_pdf(restaurant_name, menu_items):
     pdf.setFont("Helvetica-Bold", 14)
     for item in menu_items:
         if item.course == "Beverage":
-            pdf.setFillColorRGB(255, 255, 255)
-            pdf.drawString(950, y, f"• {item.name}")
             pdf.setFillColorRGB(0.97, 0.84, 0.56)
             pdf.drawString(1180, y, f"{item.price}")
+            pdf.setFillColorRGB(255, 255, 255)
+            if len(item.name) > 25:
+                index = item.name[:25].rindex(' ')
+                pdf.drawString(950, y, f"• {item.name[:index].strip()}")
+                item.name = item.name[index:]
+                y -= 20
+                pdf.drawString(950, y, f"{item.name}")
+            else:
+                pdf.drawString(950, y, f"• {item.name}")
             y -= 20
-
     pdf.save()
     print("PDF Generated")
