@@ -80,6 +80,8 @@ def showMenu(restaurant_id):
         restaurant_id=restaurant_id).all()
     return render_template('menu.html', items=items, restaurant=restaurant)
 
+# Generates a PDF version of the Menu
+
 
 @main.route('/print_pdf/<int:restaurant_id>')
 def print_pdf(restaurant_id):
@@ -144,11 +146,13 @@ def deleteMenuItem(restaurant_id, menu_id):
     else:
         return render_template('deleteMenuItem.html', item=itemToDelete)
 
+# Function that generates and styles the PDF
+
 
 def generate_pdf(restaurant_name, menu_items):
+    # Creates the pdf variable which is a canvas that's landscape and a slightly larger than A4 document
     pdf = canvas.Canvas("menu.pdf", pagesize=landscape(elevenSeventeen))
-
-    # Background and segments
+    # Background and segments of the menu
     pdf.setTitle(f"{restaurant_name} Menu")
     pdf.setFillColorRGB(0.75, 0.96, 0.85)
     pdf.rect(0, 680, 1225, 400, fill=1)
@@ -160,13 +164,14 @@ def generate_pdf(restaurant_name, menu_items):
     pdf.line(630, 670, 630, 50)
     pdf.line(930, 670, 930, 50)
 
-    # Header
+    # Header of the menu
     pdf.setFillColorRGB(0, 0, 0)
     pdf.setFont("Courier-Bold", 28)
     pdf.drawCentredString(600, 750, "Menu")
     pdf.drawCentredString(600, 710, f"{restaurant_name}")
 
-    # Body
+    # Body of the menu
+    # Appertizers segment
     pdf.setFillColorRGB(255, 255, 255)
     pdf.setFont("Helvetica-Bold", 20)
     y = 600
@@ -177,6 +182,7 @@ def generate_pdf(restaurant_name, menu_items):
             pdf.setFillColorRGB(0.97, 0.84, 0.56)
             pdf.drawString(280, y, f"{item.price}")
             pdf.setFillColorRGB(255, 255, 255)
+            # Creates new line if over 25 characters long
             if len(item.name) > 25:
                 index = item.name[:25].rindex(' ')
                 pdf.drawString(50, y, f"• {item.name[:index].strip()}")
@@ -187,6 +193,7 @@ def generate_pdf(restaurant_name, menu_items):
                 pdf.drawString(50, y, f"• {item.name}")
             y -= 20
     y = 600
+    # Entrees Segment
     pdf.setFillColorRGB(255, 255, 255)
     pdf.setFont("Helvetica-Bold", 20)
     pdf.drawString(435, 650, "Entrees:")
@@ -196,6 +203,7 @@ def generate_pdf(restaurant_name, menu_items):
             pdf.setFillColorRGB(0.97, 0.84, 0.56)
             pdf.drawString(580, y, f"{item.price}")
             pdf.setFillColorRGB(255, 255, 255)
+            # Creates new line if over 25 characters long
             if len(item.name) > 25:
                 index = item.name[:25].rindex(' ')
                 pdf.drawString(350, y, f"• {item.name[:index].strip()}")
@@ -206,6 +214,7 @@ def generate_pdf(restaurant_name, menu_items):
                 pdf.drawString(350, y, f"• {item.name}")
             y -= 20
     y = 600
+    # Desserts Segment
     pdf.setFont("Helvetica-Bold", 20)
     pdf.setFillColorRGB(255, 255, 255)
     pdf.drawString(730, 650, "Desserts:")
@@ -215,8 +224,8 @@ def generate_pdf(restaurant_name, menu_items):
             pdf.setFillColorRGB(0.97, 0.84, 0.56)
             pdf.drawString(880, y, f"{item.price}")
             pdf.setFillColorRGB(255, 255, 255)
+            # Creates new line if over 25 characters long
             if len(item.name) > 25:
-                # Creates new line if over 25 characters long
                 index = item.name[:25].rindex(' ')
                 pdf.drawString(650, y, f"• {item.name[:index].strip()}")
                 item.name = item.name[index:]
@@ -226,6 +235,7 @@ def generate_pdf(restaurant_name, menu_items):
                 pdf.drawString(650, y, f"• {item.name}")
             y -= 20
     y = 600
+    # Beverages Segment
     pdf.setFont("Helvetica-Bold", 20)
     pdf.setFillColorRGB(255, 255, 255)
     pdf.drawString(1010, 650, "Beverages:")
@@ -235,6 +245,7 @@ def generate_pdf(restaurant_name, menu_items):
             pdf.setFillColorRGB(0.97, 0.84, 0.56)
             pdf.drawString(1180, y, f"{item.price}")
             pdf.setFillColorRGB(255, 255, 255)
+            # Creates new line if over 25 characters long
             if len(item.name) > 25:
                 index = item.name[:25].rindex(' ')
                 pdf.drawString(950, y, f"• {item.name[:index].strip()}")
