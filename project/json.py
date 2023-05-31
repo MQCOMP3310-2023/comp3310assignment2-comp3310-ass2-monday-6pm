@@ -13,7 +13,7 @@ def restaurantMenuJSON(restaurant_id):
     #   items = db.session.execute(text('select * from menu_item where restaurant_id = ' + str(restaurant_id)))
 #   Parameterised queries with SQLAlchemy:
     query = text('select * from menu_item where restaurant_id = :restaurant_id LIMIT 1')
-    result = db.session.execute(query, {'restaurant_id' : restaurant_id})
+    items = db.session.execute(query, {'restaurant_id' : restaurant_id})
     items_list = [ i._asdict() for i in items ]
     return pyjs.dumps(items_list)
 
@@ -23,8 +23,8 @@ def menuItemJSON(restaurant_id, menu_id):
 #   Original code, vulnerable to injection
     #   Menu_Item = db.session.execute(text('select * from menu_item where id = ' + str(menu_id) + ' limit 1'))
 #   Parameterised queries with SQLAlchemy:
-    query = text('select * ffrom menu_item WHERE id = :menu_id LIMIT 1')
-    result = db.session.execute(query, {'menu_id': menu_id})
+    query = text('select * from menu_item WHERE id = :menu_id LIMIT 1')
+    Menu_Item = db.session.execute(query, {'menu_id': menu_id})
     items_list = [ i._asdict() for i in Menu_Item ]
     return pyjs.dumps(items_list)
 
