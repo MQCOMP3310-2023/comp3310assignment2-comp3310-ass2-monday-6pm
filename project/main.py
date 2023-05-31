@@ -102,7 +102,7 @@ def newMenuItem(restaurant_id):
 def editMenuItem(restaurant_id, menu_id):
     editedItem = db.session.query(MenuItem).filter_by(id=menu_id).one()
 #   Remove the below line; local variable not used   
-    restaurant = db.session.query(Restaurant).filter_by(id=restaurant_id).one()
+#   restaurant = db.session.query(Restaurant).filter_by(id=restaurant_id).one()
     editedItem = db.session.query(MenuItem).filter_by(id = menu_id).one()
 #   Remove the below line; local variable not used    
 #   restaurant = db.session.query(Restaurant).filter_by(id = restaurant_id).one()
