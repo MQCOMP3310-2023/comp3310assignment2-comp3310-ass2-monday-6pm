@@ -14,6 +14,7 @@ main = Blueprint('main', __name__)
 request_history = {}
 bcrypt = Bcrypt()
 
+<<<<<<< HEAD
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -48,6 +49,9 @@ def request_limit(limit, per):
     return limiter
 
 
+=======
+# Show all restaurants
+>>>>>>> c73445ff802351fa27a54d4951b9c1148e77399c
 @main.route('/')
 @main.route('/restaurant/')
 def showRestaurants():
@@ -55,8 +59,6 @@ def showRestaurants():
     return render_template('restaurants.html', restaurants=restaurants)
 
 # show searched restaurants
-
-
 @main.route('/search')
 def search_restaurants():
     q = request.args.get("q")
@@ -68,8 +70,6 @@ def search_restaurants():
     return render_template('restaurantsearch.html', restaurants=filtered_restaurants, no_results=no_results)
 
 # Create a new restaurant
-
-
 @main.route('/restaurant/new/', methods=['GET', 'POST'])
 @admin_required
 def newRestaurant():
@@ -83,8 +83,6 @@ def newRestaurant():
         return render_template('newRestaurant.html')
 
 # Edit a restaurant
-
-
 @main.route('/restaurant/<int:restaurant_id>/edit/', methods=['GET', 'POST'])
 @admin_required
 def editRestaurant(restaurant_id):
@@ -114,8 +112,6 @@ def deleteRestaurant(restaurant_id):
         return render_template('deleteRestaurant.html', restaurant=restaurantToDelete)
 
 # Show a restaurant menu
-
-
 @main.route('/restaurant/<int:restaurant_id>/')
 @main.route('/restaurant/<int:restaurant_id>/menu/')
 def showMenu(restaurant_id):
@@ -125,8 +121,6 @@ def showMenu(restaurant_id):
     return render_template('menu.html', items=items, restaurant=restaurant)
 
 # Generates a PDF version of the Menu
-
-
 @main.route('/print_pdf/<int:restaurant_id>')
 def print_pdf(restaurant_id):
     # Generate menu data from SQLdatabase
@@ -142,7 +136,8 @@ def print_pdf(restaurant_id):
 @main.route('/restaurant/<int:restaurant_id>/menu/new/', methods=['GET', 'POST'])
 @admin_required
 def newMenuItem(restaurant_id):
-    restaurant = db.session.query(Restaurant).filter_by(id=restaurant_id).one()
+#   Remove the below line; local variable not used
+#   restaurant = db.session.query(Restaurant).filter_by(id=restaurant_id).one()
     if request.method == 'POST':
         newItem = MenuItem(name=request.form['name'], description=request.form['description'],
                            price=request.form['price'], course=request.form['course'], restaurant_id=restaurant_id)
@@ -154,14 +149,15 @@ def newMenuItem(restaurant_id):
         return render_template('newmenuitem.html', restaurant_id=restaurant_id)
 
 # Edit a menu item
-
-
 @main.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/edit', methods=['GET', 'POST'])
 @admin_required
 def editMenuItem(restaurant_id, menu_id):
-
     editedItem = db.session.query(MenuItem).filter_by(id=menu_id).one()
-    restaurant = db.session.query(Restaurant).filter_by(id=restaurant_id).one()
+#   Remove the below line; local variable not used   
+#   restaurant = db.session.query(Restaurant).filter_by(id=restaurant_id).one()
+    editedItem = db.session.query(MenuItem).filter_by(id = menu_id).one()
+#   Remove the below line; local variable not used    
+#   restaurant = db.session.query(Restaurant).filter_by(id = restaurant_id).one()
     if request.method == 'POST':
         if request.form['name']:
             editedItem.name = request.form['name']
@@ -183,7 +179,8 @@ def editMenuItem(restaurant_id, menu_id):
 @main.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/delete', methods=['GET', 'POST'])
 @admin_required
 def deleteMenuItem(restaurant_id, menu_id):
-    restaurant = db.session.query(Restaurant).filter_by(id=restaurant_id).one()
+#   Remove the below line; local variable not used
+#   restaurant = db.session.query(Restaurant).filter_by(id=restaurant_id).one()
     itemToDelete = db.session.query(MenuItem).filter_by(id=menu_id).one()
     if request.method == 'POST':
         db.session.delete(itemToDelete)
@@ -231,8 +228,6 @@ def logout():
     return redirect(url_for('main.login'))
 
 # Function that generates and styles the PDF
-
-
 def generate_pdf(restaurant_name, menu_items):
     # creates buffer for pdf so it downloads from browser
     pdf_buffer = BytesIO()
