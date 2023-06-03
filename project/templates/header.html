@@ -5,7 +5,18 @@
 		</a>
 	</div>
 	<div class="col-md-6 text-right">
-					<p>Login Link will go Here </p>
-		
+		{% if current_user.is_anonymous %}
+			<a href="{{url_for('main.login')}}">
+				<span class="Login"></span>Login
+			</a>
+			<a> | </a>
+			<a href="{{url_for('main.register')}}">
+				<span class="Login"></span>Register
+			</a>
+		{% else %}
+			<a href="{{url_for('main.logout')}}">
+				<span class="Login"></span>Logout
+			</a>
+		{% endif %}
 	</div>
 </div>

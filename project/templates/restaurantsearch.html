@@ -36,6 +36,9 @@
 			<button type="submit">Search</button>
 			</form>
 		</div>
+		{% if no_results %}
+			<div class="results">No Restaurants Found Matching That Name.</div>
+		{% endif %}
 	</div>
 	<div class="row padding-top padding-bottom">
 		<div class="col-md-1"></div>

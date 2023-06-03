@@ -1,9 +1,10 @@
 from project import db, create_app, models
-from project.models import Restaurant, MenuItem
+from project.models import Restaurant, MenuItem, UserAccount
 
 
 def populate_db():
     # Menu for UrbanBurger
+
     restaurant1 = Restaurant(name="Urban Burger")
 
     session = db.session()

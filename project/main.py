@@ -1,13 +1,51 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for
-from .models import Restaurant, MenuItem
+from flask import Blueprint, render_template, request, flash, redirect, url_for, make_response, jsonify, Flask
+from .models import Restaurant, MenuItem, UserAccount, LoginForm, RegisterForm
 from sqlalchemy import asc
-from . import db
+from . import db, login_manager
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import elevenSeventeen, landscape
+from io import BytesIO
+from flask_bcrypt import Bcrypt
+import time
+from flask_login import login_user, LoginManager, logout_user, current_user
+from .auth import admin_required
 
 main = Blueprint('main', __name__)
+request_history = {}
+bcrypt = Bcrypt()
 
-# Show all restaurants
+
+@login_manager.user_loader
+def load_user(user_id):
+    return UserAccount.query.get(int(user_id))
+
+# Error page for trying to access Admin only
+
+
+@main.errorhandler(403)
+def forbidden(error):
+    return render_template('error.html', error='Forbidden access'), 403
+
+# Limiter to amount of searches per second
+
+
+def request_limit(limit, per):
+    def limiter(f):
+        def wrapper(*args, **kwargs):
+            identifier = request.remote_addr
+            timestamp = time.time()
+            window_start = timestamp - per
+            requests = request_history.get(identifier, [])
+            requests = [req for req in requests if req > window_start]
+
+            if len(requests) > limit:
+                return jsonify({"error": "Search limit exceeded please try again later"}), 429
+
+            requests.append(timestamp)
+            request_history[identifier] = requests
+            return f(*args, **kwargs)
+        return wrapper
+    return limiter
 
 
 @main.route('/')
@@ -24,12 +62,16 @@ def search_restaurants():
     q = request.args.get("q")
     filtered_restaurants = Restaurant.query.filter(
         Restaurant.name.ilike(f"%{q}%")).order_by(asc(Restaurant.name))
-    return render_template('restaurantsearch.html', restaurants=filtered_restaurants)
+    no_results = False
+    if filtered_restaurants.count() == 0:
+        no_results = True
+    return render_template('restaurantsearch.html', restaurants=filtered_restaurants, no_results=no_results)
 
 # Create a new restaurant
 
 
 @main.route('/restaurant/new/', methods=['GET', 'POST'])
+@admin_required
 def newRestaurant():
     if request.method == 'POST':
         newRestaurant = Restaurant(name=request.form['name'])
@@ -44,6 +86,7 @@ def newRestaurant():
 
 
 @main.route('/restaurant/<int:restaurant_id>/edit/', methods=['GET', 'POST'])
+@admin_required
 def editRestaurant(restaurant_id):
     editedRestaurant = db.session.query(
         Restaurant).filter_by(id=restaurant_id).one()
@@ -58,6 +101,7 @@ def editRestaurant(restaurant_id):
 
 # Delete a restaurant
 @main.route('/restaurant/<int:restaurant_id>/delete/', methods=['GET', 'POST'])
+@admin_required
 def deleteRestaurant(restaurant_id):
     restaurantToDelete = db.session.query(
         Restaurant).filter_by(id=restaurant_id).one()
@@ -90,12 +134,13 @@ def print_pdf(restaurant_id):
         restaurant_id=restaurant_id).all()
     restaurant = db.session.query(
         Restaurant).filter_by(id=restaurant_id).one()
-    generate_pdf(restaurant.name, menu_data)
-    return redirect(url_for('main.showMenu', restaurant_id=restaurant_id))
+    response = generate_pdf(restaurant.name, menu_data)
+    return response
 
 
 # Create a new menu item
 @main.route('/restaurant/<int:restaurant_id>/menu/new/', methods=['GET', 'POST'])
+@admin_required
 def newMenuItem(restaurant_id):
     restaurant = db.session.query(Restaurant).filter_by(id=restaurant_id).one()
     if request.method == 'POST':
@@ -112,6 +157,7 @@ def newMenuItem(restaurant_id):
 
 
 @main.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/edit', methods=['GET', 'POST'])
+@admin_required
 def editMenuItem(restaurant_id, menu_id):
 
     editedItem = db.session.query(MenuItem).filter_by(id=menu_id).one()
@@ -135,6 +181,7 @@ def editMenuItem(restaurant_id, menu_id):
 
 # Delete a menu item
 @main.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/delete', methods=['GET', 'POST'])
+@admin_required
 def deleteMenuItem(restaurant_id, menu_id):
     restaurant = db.session.query(Restaurant).filter_by(id=restaurant_id).one()
     itemToDelete = db.session.query(MenuItem).filter_by(id=menu_id).one()
@@ -146,12 +193,51 @@ def deleteMenuItem(restaurant_id, menu_id):
     else:
         return render_template('deleteMenuItem.html', item=itemToDelete)
 
+
+# login button/page
+
+@main.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = UserAccount.query.filter_by(username=form.username.data).first()
+        if user:
+            if bcrypt.check_password_hash(user.password, form.password.data):
+                login_user(user)
+                return redirect(url_for('main.showRestaurants'))
+    return render_template('login.html', form=form)
+
+# Register button/page
+
+
+@main.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegisterForm()
+    if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.password.data)
+        new_user = UserAccount(
+            username=form.username.data, password=hashed_password)
+        db.session.add(new_user)
+        db.session.commit()
+        return redirect(url_for('main.login'))
+    return render_template('register.html', form=form)
+
+# Logout button/page
+
+
+@main.route('/logout', methods=['GET', 'POST'])
+def logout():
+    logout_user()
+    return redirect(url_for('main.login'))
+
 # Function that generates and styles the PDF
 
 
 def generate_pdf(restaurant_name, menu_items):
+    # creates buffer for pdf so it downloads from browser
+    pdf_buffer = BytesIO()
     # Creates the pdf variable which is a canvas that's landscape and a slightly larger than A4 document
-    pdf = canvas.Canvas("menu.pdf", pagesize=landscape(elevenSeventeen))
+    pdf = canvas.Canvas(pdf_buffer, pagesize=landscape(elevenSeventeen))
     # Background and segments of the menu
     pdf.setTitle(f"{restaurant_name} Menu")
     pdf.setFillColorRGB(0.75, 0.96, 0.85)
@@ -183,8 +269,8 @@ def generate_pdf(restaurant_name, menu_items):
             pdf.drawString(280, y, f"{item.price}")
             pdf.setFillColorRGB(255, 255, 255)
             # Creates new line if over 25 characters long
-            if len(item.name) > 25:
-                index = item.name[:25].rindex(' ')
+            if len(item.name) > 27:
+                index = item.name[:27].rindex(' ')
                 pdf.drawString(50, y, f"• {item.name[:index].strip()}")
                 item.name = item.name[index:]
                 y -= 20
@@ -204,8 +290,8 @@ def generate_pdf(restaurant_name, menu_items):
             pdf.drawString(580, y, f"{item.price}")
             pdf.setFillColorRGB(255, 255, 255)
             # Creates new line if over 25 characters long
-            if len(item.name) > 25:
-                index = item.name[:25].rindex(' ')
+            if len(item.name) > 27:
+                index = item.name[:27].rindex(' ')
                 pdf.drawString(350, y, f"• {item.name[:index].strip()}")
                 item.name = item.name[index:]
                 y -= 20
@@ -225,8 +311,8 @@ def generate_pdf(restaurant_name, menu_items):
             pdf.drawString(880, y, f"{item.price}")
             pdf.setFillColorRGB(255, 255, 255)
             # Creates new line if over 25 characters long
-            if len(item.name) > 25:
-                index = item.name[:25].rindex(' ')
+            if len(item.name) > 27:
+                index = item.name[:27].rindex(' ')
                 pdf.drawString(650, y, f"• {item.name[:index].strip()}")
                 item.name = item.name[index:]
                 y -= 20
@@ -246,8 +332,8 @@ def generate_pdf(restaurant_name, menu_items):
             pdf.drawString(1180, y, f"{item.price}")
             pdf.setFillColorRGB(255, 255, 255)
             # Creates new line if over 25 characters long
-            if len(item.name) > 25:
-                index = item.name[:25].rindex(' ')
+            if len(item.name) > 27:
+                index = item.name[:27].rindex(' ')
                 pdf.drawString(950, y, f"• {item.name[:index].strip()}")
                 item.name = item.name[index:]
                 y -= 20
@@ -256,4 +342,11 @@ def generate_pdf(restaurant_name, menu_items):
                 pdf.drawString(950, y, f"• {item.name}")
             y -= 20
     pdf.save()
-    print("PDF Generated")
+
+    pdf_buffer.seek(0)
+
+    response = make_response(pdf_buffer.getvalue())
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'attachment; filename=menu.pdf'
+
+    return response
