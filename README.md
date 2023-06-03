@@ -7,3 +7,6 @@ For Admin access:
 
 Username: AdminAccount
 Password: Comp3130
+
+Didnt add restaurant owner role which would be Similar to regular user role,
+but would have access to editing the menu for their own restaurant and maybe a few other things.
