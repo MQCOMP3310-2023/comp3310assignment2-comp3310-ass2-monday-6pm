@@ -1,0 +1,48 @@
+{% extends "main.html" %}
+{% block content %}
+{% include "header.html" %}
+	<div class="row top-menu">
+		<div class="col-md-10"></div>
+		<div class="col-md-2 text-right">
+					</div>
+	</div>
+	<div class="row divider blue">
+		<div class="col-md-12"></div>
+	</div>
+	<div class="row banner main">
+		<div class="col-md-1"></div>
+		<div class="col-md-11 padding-none">
+			<h1>Current Users</h1>
+		</div>
+	</div>
+
+<div class = 'flash'>
+   {% with messages = get_flashed_messages() %}
+      {% if messages %}
+          
+        <ul>
+        {% for message in messages %}
+            <li> <strong> {{ message }} </strong> </li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+    {% endwith %}
+
+</div>
+	{% for username in usernames %}
+		<a>
+			<div class="row">
+				<div class="col-md-1"></div>
+					<div class="col-md-10 restaurant-list">
+						<h3>Account Name: {{username.username}}</h3>
+                        <form action="/admin/update-role/{{ username.id }}" method="POST">
+                            <input type="radio" name="role" value="admin" {% if username.is_admin %} checked {% endif %}> Admin
+                            <input type="radio" name="role" value="user" {% if not username.is_admin %} checked {% endif %}> User
+                            <button type="submit">Save</button>
+                        </form>
+					</div>
+				<div class="col-md-1"></div>
+			</div>
+		</a>
+	{% endfor %}
+{% endblock %}

@@ -5,6 +5,13 @@
 		</a>
 	</div>
 	<div class="col-md-6 text-right">
+		{% if current_user.role == "admin" %}
+			<a>You are an admin: </a>
+			<a href="{{url_for('main.admin')}}">
+				<span class="Login"></span>Admin Page
+			</a>
+			<a> | </a>
+		{% endif %}
 		{% if current_user.is_anonymous %}
 			<a href="{{url_for('main.login')}}">
 				<span class="Login"></span>Login
