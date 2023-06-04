@@ -8,7 +8,7 @@ For Admin access:
 Username: AdminAccount
 Password: Comp3130
 
-didn't add the restaurant owner role, which would be similar to the regular user role,
+Didn't add the restaurant owner role, which would be similar to the regular user role,
 but would have access to editing the menu for their own restaurant and maybe a few other things.
 
-Admin accounts have extra privileges that a regular account wouldn't have access to; they can also access the admin dashboard to add and revoke the admin role for accounts.
+Admin accounts have extra privileges compared to a regular account which they wouldn't have access to; Admins can also access the admin dashboard to add and revoke the admin role for accounts.
