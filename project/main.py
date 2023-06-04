@@ -20,15 +20,11 @@ def load_user(user_id):
     return UserAccount.query.get(int(user_id))
 
 # Error page for trying to access Admin only
-
-
 @main.errorhandler(403)
 def forbidden(error):
     return render_template('error.html', error='Forbidden access'), 403
 
 # Limiter to amount of searches per second
-
-
 def request_limit(limit, per):
     def limiter(f):
         def wrapper(*args, **kwargs):
@@ -56,8 +52,6 @@ def showRestaurants():
     return render_template('restaurants.html', restaurants=restaurants)
 
 # show searched restaurants
-
-
 @main.route('/search')
 def search_restaurants():
     q = request.args.get("q")
@@ -69,8 +63,6 @@ def search_restaurants():
     return render_template('restaurantsearch.html', restaurants=filtered_restaurants, no_results=no_results)
 
 # Create a new restaurant
-
-
 @main.route('/restaurant/new/', methods=['GET', 'POST'])
 @admin_required
 def newRestaurant():
@@ -84,8 +76,6 @@ def newRestaurant():
         return render_template('newRestaurant.html')
 
 # Edit a restaurant
-
-
 @main.route('/restaurant/<int:restaurant_id>/edit/', methods=['GET', 'POST'])
 @admin_required
 def editRestaurant(restaurant_id):
@@ -115,8 +105,6 @@ def deleteRestaurant(restaurant_id):
         return render_template('deleteRestaurant.html', restaurant=restaurantToDelete)
 
 # Show a restaurant menu
-
-
 @main.route('/restaurant/<int:restaurant_id>/')
 @main.route('/restaurant/<int:restaurant_id>/menu/')
 def showMenu(restaurant_id):
@@ -126,8 +114,6 @@ def showMenu(restaurant_id):
     return render_template('menu.html', items=items, restaurant=restaurant)
 
 # Generates a PDF version of the Menu
-
-
 @main.route('/print_pdf/<int:restaurant_id>')
 def print_pdf(restaurant_id):
     # Generate menu data from SQLdatabase
@@ -156,12 +142,10 @@ def newMenuItem(restaurant_id):
         return render_template('newmenuitem.html', restaurant_id=restaurant_id)
 
 # Edit a menu item
-
-
 @main.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/edit', methods=['GET', 'POST'])
 @admin_required
 def editMenuItem(restaurant_id, menu_id):
-    editedItem = db.session.query(MenuItem).filter_by(id=menu_id).one()
+#   editedItem = db.session.query(MenuItem).filter_by(id=menu_id).one()
 #   Remove the below line; local variable not used
 #   restaurant = db.session.query(Restaurant).filter_by(id=restaurant_id).one()
     editedItem = db.session.query(MenuItem).filter_by(id=menu_id).one()
@@ -189,7 +173,7 @@ def editMenuItem(restaurant_id, menu_id):
 @admin_required
 def deleteMenuItem(restaurant_id, menu_id):
     #   Remove the below line; local variable not used
-    #   restaurant = db.session.query(Restaurant).filter_by(id=restaurant_id).one()
+#   restaurant = db.session.query(Restaurant).filter_by(id=restaurant_id).one()
     itemToDelete = db.session.query(MenuItem).filter_by(id=menu_id).one()
     if request.method == 'POST':
         db.session.delete(itemToDelete)
@@ -201,7 +185,6 @@ def deleteMenuItem(restaurant_id, menu_id):
 
 
 # login button/page
-
 @main.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
@@ -214,8 +197,6 @@ def login():
     return render_template('login.html', form=form)
 
 # Register button/page
-
-
 @main.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
@@ -229,16 +210,12 @@ def register():
     return render_template('register.html', form=form)
 
 # Logout button/page
-
-
 @main.route('/logout', methods=['GET', 'POST'])
 def logout():
     logout_user()
     return redirect(url_for('main.login'))
 
 # admin page to see users
-
-
 @main.route('/admin', methods=['GET', 'POST'])
 @admin_required
 def admin():
@@ -257,8 +234,6 @@ def update_user_role(user_id):
     return redirect('/admin')
 
 # Function that generates and styles the PDF
-
-
 def generate_pdf(restaurant_name, menu_items):
     # creates buffer for pdf so it downloads from browser
     pdf_buffer = BytesIO()
